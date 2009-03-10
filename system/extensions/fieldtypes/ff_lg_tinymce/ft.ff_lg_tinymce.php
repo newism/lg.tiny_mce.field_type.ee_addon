@@ -17,8 +17,8 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	* @var array
 	*/
 	var $info = array(
-		'name'             => 'LG TinyMCE (FieldFrame)',
-		'version'          => '1.0.0',
+		'name'             => 'LG TinyMCE',
+		'version'          => '2.0.0',
 		'desc'             => 'Integrates Moxicodes TinyMCE into ExpressionEngine providing WYSIWYG content editing',
 		'docs_url'         => 'http://leevigraham.com/cms-customisation/expressionengine/addon/lg-tinymce/',
 		'versions_xml_url' => 'http://leevigraham.com/version-check/versions.xml'
