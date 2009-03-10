@@ -41,8 +41,7 @@ tinyMCE_GZ.init({
 	disk_cache : true,
 	debug : false
 });
-</script>",
-	"tinymce_configs_path"					=> "/Library/WebServer/WebDocuments/Internal/dev.cmsfever.com/ee-admin/extensions/fieldtypes/ff_lg_tinymce/tinymce_config/"
+</script>"
 );
 
 	/**
@@ -70,19 +69,23 @@ tinyMCE_GZ.init({
 	*/
 	function display_site_settings()
 	{
+		global $LANG;
 		$SD = new Fieldframe_SettingsDisplay();
-		$r = $SD->block("LG TinyMCE settings")
+		$r = $SD->block($LANG->line("lg_tinymce_settings_title"))
+			/*
 			. $SD->row(array(
-				$SD->label('TinyMCE config server path', ''),
+				$SD->label($LANG->line("lg_tinymce_config_path_label"), ''),
 				$SD->text('tinymce_configs_path', $this->site_settings['tinymce_configs_path'], array('width' => '99%'))
 			))
+			*/
 			. $SD->row(array(
-				$SD->label('TinyMCE Global Scripts', ''),
+				$SD->label($LANG->line("lg_tinymce_global_scripts_label"), ''),
 				$SD->textarea('tinymce_global_scripts', $this->site_settings['tinymce_global_scripts'], array('rows' => '20', 'width' => '99%'))
 			))
 		. $SD->block_c();
 		return $r;
 	}
+
 	/**
 	* Display Field
 	* 
@@ -91,7 +94,7 @@ tinyMCE_GZ.init({
 	* @param  array   $field_settings  The field's settings
 	* @return string  The field's HTML
 	*/
-	function display_field($field_name, $field_data, $field_settings)
+	function display_field($field_name, $field_data, $field_settings, $row = array())
 	{
 		global $DSP, $SESS;
 
@@ -117,7 +120,14 @@ tinyMCE_GZ.init({
 			if(isset($SESS->cache['lg']['ff_tinymce']['included_configs'][$field_settings["tiny_mce_conf"]]) === FALSE)
 			{
 				// include it
-				$r .= $configs[$field_settings["tiny_mce_conf"]];
+				if(substr($field_settings["tiny_mce_conf"], -3) == ".js")
+				{
+					$r .= '<script src="'.FT_URL."ff_lg_tinymce/tinymce_config/".$field_settings["tiny_mce_conf"].'" type="text/javascript" charset="utf-8"></script>';
+				}
+				else
+				{
+					$r .= $configs[$field_settings["tiny_mce_conf"]];
+				}
 				// flag included
 				$SESS->cache['lg']['ff_tinymce']['included_configs'][$field_settings["tiny_mce_conf"]] = TRUE;
 			}
@@ -127,7 +137,7 @@ tinyMCE_GZ.init({
 		$filename_parts = explode(".", $field_settings["tiny_mce_conf"]);
 
 		// add the textarea
-		$r .= $DSP->input_textarea($field_name, $field_data, 16, 'lg_tinymce_' . $filename_parts[0], '99%');
+		$r .= $DSP->input_textarea($field_name, $field_data, (isset($row['field_ta_rows']) ? $row['field_ta_rows'] : 20), 'lg_tinymce_' . $filename_parts[0], '99%');
 
 		// return the string
 		return $r;
@@ -141,8 +151,10 @@ tinyMCE_GZ.init({
 	*/
 	function display_field_settings($settings)
 	{
+		global $LANG, $REGX;
+
 		// open the cell
-		$cell2 = "<label for=''>TinyMCE Configuration:</label> ";
+		$cell2 = "<label for='tiny_mce_conf'>".$LANG->line("tiny_mce_conf_label")."</label> ";
 
 		// get the configs
 		$configs = $this->_get_tinymce_configs();
@@ -151,25 +163,34 @@ tinyMCE_GZ.init({
 		if($configs !== FALSE)
 		{
 			// create select
-			$cell2 .= "<select name='tiny_mce_conf'>";
+			$cell2 .= "<select name='tiny_mce_conf' id='tiny_mce_conf'>";
 			// loop over each config
 			foreach ($configs as $key => $value)
 			{
+				$selected = ($key == $settings["tiny_mce_conf"]) ? " selected='selected'" : "";
 				// add an option with the filename as the key
-				$cell2 .= "<option value='".$key."'>".$key."</option>";
+				$cell2 .= "<option value='".$key."'".$selected.">".$key."</option>";
 			}
 			// close the select
 			$cell2 .= "</select>";
+
+			// open the cell
+			$cell2 .= "<label for='tiny_mce_rows' style='margin-left:18px'>".$LANG->line("tiny_mce_rows_label")."</label> ";
+			// create rows
+			$cell2 .= "<input type='text' size='2' name='tiny_mce_rows' id='tiny_mce_rows' value='".$REGX->form_prep($settings["tiny_mce_rows"])."' />";
+
+			// return the array
+			return array('cell2' => $cell2);
+
+
 		}
 		// no configs
 		else
 		{
 			// add an error message
-			$cell2 .= "<span class='highlight'>No configuration files found in: ".$this->settings["tinymce_configs_path"].".</span>";
+			$cell2 .= "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
 		}
 
-		// return the array
-		return array('cell2' => $cell2);
 	}
 
 	/**
@@ -189,7 +210,7 @@ tinyMCE_GZ.init({
 			// assume there are no configs
 			$configs = FALSE;
 			// if the provided string an actual directory
-			if(is_dir($dir = $this->site_settings["tinymce_configs_path"]))
+			if(is_dir($dir = FT_PATH."ff_lg_tinymce/tinymce_config/"))
 			{
 				// open the directory and assign it to a handle
 				$dir_handle = opendir($dir);
