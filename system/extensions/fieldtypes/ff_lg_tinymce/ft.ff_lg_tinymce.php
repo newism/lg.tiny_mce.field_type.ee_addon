@@ -165,9 +165,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		}
 
 		return array(
-			'cell2'						=> $cell2,
-			'formatting_unavailable' 	=> 'y',
-			'direction_unavailable' 	=> 'y',
+			'cell2'						=> $cell2
 		);
 
 	}
