@@ -31,37 +31,39 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	var $default_site_settings 		= array(
 		"tinymce_global_scripts"			=> "<script src='/scripts/tiny_mce/tiny_mce_gzip.js' type='text/javascript' charset='utf-8'></script>
 <script type='text/javascript'>
-tinyMCE_GZ.init({
-	plugins : 'safari,pagebreak,style,layer,table,save,advhr,advimage,'
-	+ 'advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,'
-	+ 'searchreplace,print,contextmenu,paste,directionality,fullscreen,'
-	+ 'noneditable,visualchars,nonbreaking,xhtmlxtras,template',
-	themes : 'advanced',
-	languages : 'en',
-	disk_cache : true,
-	debug : false
-});
-</script>"
-);
+//<![CDATA[
+	tinyMCE_GZ.init({
+		plugins : 'safari,pagebreak,style,layer,table,save,advhr,advimage,'
+		+ 'advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,'
+		+ 'searchreplace,print,contextmenu,paste,directionality,fullscreen,'
+		+ 'noneditable,visualchars,nonbreaking,xhtmlxtras,template',
+		themes : 'advanced',
+		languages : 'en',
+		disk_cache : true,
+		debug : false
+	});
+//]]>
+</script>");
+
+	var $required_configs = array();
+
+	/**
+	* Hooks
+	* @var array
+	*/
+	var $hooks = array(
+		'show_full_control_panel_end' => array('priority' => 99, 'method' => 'show_full_control_panel_end')
+	);
 
 	/**
 	* Constructor - Adds a closing slash to the tinymce configs path if needed
 	*/
 	function __construct()
 	{
-		//
-		$this->site_settings["tinymce_configs_path"] = FT_PATH . "ff_lg_tinymce/tinymce_config/";
-
 		global $SESS;
 
 		// create a $SESS array element for lg addons
 		if(isset($SESS->cache['lg']) === FALSE) $SESS->cache['lg'] = array();
-
-		// add a trailing slash to the tinymce configs path if required
-		if(substr($this->site_settings["tinymce_configs_path"], -1, 1) != "/")
-		{
-			$this->site_settings["tinymce_configs_path"] .= "/";
-		}
 	}
 
 	/**
@@ -72,15 +74,14 @@ tinyMCE_GZ.init({
 		global $LANG;
 		$SD = new Fieldframe_SettingsDisplay();
 		$r = $SD->block($LANG->line("lg_tinymce_settings_title"))
-			/*
 			. $SD->row(array(
-				$SD->label($LANG->line("lg_tinymce_config_path_label"), ''),
-				$SD->text('tinymce_configs_path', $this->site_settings['tinymce_configs_path'], array('width' => '99%'))
-			))
-			*/
+				'<div class="box" style="border-width:0 0 1px 0; margin:0; padding:10px 5px">'
+				. $LANG->line("lg_tinymce_settings_info")
+				. '</div>'
+				), '')
 			. $SD->row(array(
 				$SD->label($LANG->line("lg_tinymce_global_scripts_label"), ''),
-				$SD->textarea('tinymce_global_scripts', $this->site_settings['tinymce_global_scripts'], array('rows' => '20', 'width' => '99%'))
+				$SD->textarea('tinymce_global_scripts', $this->site_settings['tinymce_global_scripts'], array('rows' => '15', 'width' => '99%'))
 			))
 		. $SD->block_c();
 		return $r;
@@ -96,48 +97,18 @@ tinyMCE_GZ.init({
 	*/
 	function display_field($field_name, $field_data, $field_settings, $row = array())
 	{
-		global $DSP, $SESS;
+		global $DSP;
 
 		// new string
 		$r = "\n";
 
-		// if the library script has not been included
-		if(isset($SESS->cache['lg']['ff_tinymce']['script_included']) === FALSE)
-		{
-			// include the library script
-			$r .= $this->site_settings['tinymce_global_scripts'];
-			// flag included
-			$SESS->cache['lg']['ff_tinymce']['script_included'] = TRUE;
-		}
-
-		// get the configs
-		$configs = $this->_get_tinymce_configs();
-
-		// if configs
-		if($configs !== FALSE)
-		{
-			// if this config has not been included
-			if(isset($SESS->cache['lg']['ff_tinymce']['included_configs'][$field_settings["tiny_mce_conf"]]) === FALSE)
-			{
-				// include it
-				if(substr($field_settings["tiny_mce_conf"], -3) == ".js")
-				{
-					$r .= '<script src="'.FT_URL."ff_lg_tinymce/tinymce_config/".$field_settings["tiny_mce_conf"].'" type="text/javascript" charset="utf-8"></script>';
-				}
-				else
-				{
-					$r .= $configs[$field_settings["tiny_mce_conf"]];
-				}
-				// flag included
-				$SESS->cache['lg']['ff_tinymce']['included_configs'][$field_settings["tiny_mce_conf"]] = TRUE;
-			}
-		}
-
 		// split the filename to give this textfield a specific class
 		$filename_parts = explode(".", $field_settings["tiny_mce_conf"]);
 
+		$this->required_configs[] = $field_settings["tiny_mce_conf"];
+
 		// add the textarea
-		$r .= $DSP->input_textarea($field_name, $field_data, (isset($row['field_ta_rows']) ? $row['field_ta_rows'] : 20), 'lg_tinymce_' . $filename_parts[0], '99%');
+		$r .= $DSP->input_textarea($field_name, $field_data, (isset($row['tiny_mce_rows']) ? $row['tiny_mce_rows'] : 20), 'lg_tinymce_' . $filename_parts[0], '99%');
 
 		// return the string
 		return $r;
@@ -151,7 +122,11 @@ tinyMCE_GZ.init({
 	*/
 	function display_field_settings($settings)
 	{
-		global $LANG, $REGX;
+		global $LANG, $REGX, $SESS;
+
+		$SESS->cache['lg']['ff_tinymce']['require_scripts'] = TRUE;
+
+		$settings = array_merge(array("tiny_mce_conf" => "", "tiny_mce_rows" => "20"), $settings);
 
 		// open the cell
 		$cell2 = "<label for='tiny_mce_conf'>".$LANG->line("tiny_mce_conf_label")."</label> ";
@@ -181,8 +156,6 @@ tinyMCE_GZ.init({
 
 			// return the array
 			return array('cell2' => $cell2);
-
-
 		}
 		// no configs
 		else
@@ -190,6 +163,55 @@ tinyMCE_GZ.init({
 			// add an error message
 			$cell2 .= "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
 		}
+
+		return array(
+			'cell2'						=> $cell2,
+			'formatting_unavailable' 	=> 'y',
+			'direction_unavailable' 	=> 'y',
+		);
+
+	}
+
+	/**
+	* Takes the control panel html and adds the TinyMCE scripts
+	*
+	* @param	string $out The control panel html
+	* @return	string The modified control panel html
+	* @since 	Version 2.0.0
+	*/
+	function show_full_control_panel_end($out)
+	{
+		global $IN, $EXT, $SESS;
+
+		if($EXT->last_call !== FALSE) $out = $EXT->last_call;
+
+		if($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit')
+		{
+			// include the library script
+			$r =  "\n\n" . "<!-- START LG TINYMCE 2 -->";
+			$r .= "\n" . $this->site_settings['tinymce_global_scripts'];
+
+			if(($configs = $this->_get_tinymce_configs()) !== FALSE)
+			{
+				foreach ($this->required_configs as $filename)
+				{
+					// include it
+					if(substr($filename, -3) == ".js")
+					{
+						$r .= "\n".'<script src="'.FT_URL."ff_lg_tinymce/tinymce_config/".$filename.'" type="text/javascript" charset="utf-8"></script>';
+					}
+					else
+					{
+						$r .= $configs[$filename];
+					}
+				}
+			}
+
+			$r .= "\n" . "<!-- END LG TINYMCE 2 -->\n";
+			$out = str_replace("<head>", "<head>" . $r, $out);
+		}
+
+		return $out;
 
 	}
 
