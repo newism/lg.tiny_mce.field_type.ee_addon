@@ -18,7 +18,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*/
 	var $info = array(
 		'name'             => 'LG TinyMCE',
-		'version'          => '2.0.0',
+		'version'          => '2.0.1',
 		'desc'             => 'Integrates Moxicodes TinyMCE into ExpressionEngine providing WYSIWYG content editing',
 		'docs_url'         => 'http://leevigraham.com/cms-customisation/expressionengine/addon/lg-tinymce/',
 		'versions_xml_url' => 'http://leevigraham.com/version-check/versions.xml'
@@ -44,6 +44,11 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	});
 //]]>
 </script>");
+
+	var $default_field_settings = array(
+		"tiny_mce_conf"	=> "",
+		"tiny_mce_rows" => 20
+	)
 
 	var $required_configs = array();
 
@@ -122,11 +127,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*/
 	function display_field_settings($settings)
 	{
-		global $LANG, $REGX, $SESS;
-
-		$SESS->cache['lg']['ff_tinymce']['require_scripts'] = TRUE;
-
-		$settings = array_merge(array("tiny_mce_conf" => "", "tiny_mce_rows" => "20"), $settings);
+		global $LANG, $REGX;
 
 		// open the cell
 		$cell2 = "<label for='tiny_mce_conf'>".$LANG->line("tiny_mce_conf_label")."</label> ";
@@ -165,7 +166,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		}
 
 		return array(
-			'cell2'						=> $cell2
+			'cell2' => $cell2
 		);
 
 	}
@@ -179,9 +180,9 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*/
 	function show_full_control_panel_end($out)
 	{
-		global $IN, $EXT, $SESS;
+		global $IN;
 
-		if($EXT->last_call !== FALSE) $out = $EXT->last_call;
+		$out = $this->get_last_call($out) . NL . NL;
 
 		if($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit')
 		{
