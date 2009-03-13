@@ -48,7 +48,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	var $default_field_settings = array(
 		"tiny_mce_conf"	=> "",
 		"tiny_mce_rows" => 20
-	)
+	);
 
 	var $required_configs = array();
 
