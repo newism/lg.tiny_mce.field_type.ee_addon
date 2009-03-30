@@ -18,7 +18,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*/
 	var $info = array(
 		'name'             => 'LG TinyMCE',
-		'version'          => '2.0.1',
+		'version'          => '2.0.0',
 		'desc'             => 'Integrates Moxicodes TinyMCE into ExpressionEngine providing WYSIWYG content editing',
 		'docs_url'         => 'http://leevigraham.com/cms-customisation/expressionengine/addon/lg-tinymce/',
 		'versions_xml_url' => 'http://leevigraham.com/version-check/versions.xml'
@@ -46,8 +46,11 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 </script>");
 
 	var $default_field_settings = array(
-		"tiny_mce_conf"	=> "",
-		"tiny_mce_rows" => 20
+		"tiny_mce_conf"	=> ""
+	);
+
+	var $default_cell_settings = array(
+		"tiny_mce_conf"	=> ""
 	);
 
 	var $required_configs = array();
@@ -80,12 +83,9 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		$SD = new Fieldframe_SettingsDisplay();
 		$r = $SD->block($LANG->line("lg_tinymce_settings_title"))
 			. $SD->row(array(
-				'<div class="box" style="border-width:0 0 1px 0; margin:0; padding:10px 5px">'
+				$SD->label($LANG->line("lg_tinymce_global_scripts_label"), '')
 				. $LANG->line("lg_tinymce_settings_info")
-				. '</div>'
-				), '')
-			. $SD->row(array(
-				$SD->label($LANG->line("lg_tinymce_global_scripts_label"), ''),
+				. $LANG->line("lg_tinymce_settings_example"),
 				$SD->textarea('tinymce_global_scripts', $this->site_settings['tinymce_global_scripts'], array('rows' => '15', 'width' => '99%'))
 			))
 		. $SD->block_c();
@@ -100,9 +100,9 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	* @param  array   $field_settings  The field's settings
 	* @return string  The field's HTML
 	*/
-	function display_field($field_name, $field_data, $field_settings, $row = array())
+	function display_field($field_name, $field_data, $field_settings)
 	{
-		global $DSP;
+		global $DSP, $i;
 
 		// new string
 		$r = "\n";
@@ -113,24 +113,61 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		$this->required_configs[] = $field_settings["tiny_mce_conf"];
 
 		// add the textarea
-		$r .= $DSP->input_textarea($field_name, $field_data, (isset($row['tiny_mce_rows']) ? $row['tiny_mce_rows'] : 20), 'lg_tinymce_' . $filename_parts[0], '99%');
+		$r .= "<textarea class='lg_tinymce_".$filename_parts[0]."' name='". $field_name ."' style='' rows='5'>" . $field_data . "</textarea>";
 
 		// return the string
 		return $r;
 	}
 
 	/**
+	* Display Cell
+	* 
+	* @param  	array  $settings  The field's settings
+	* @since 	version 2.0.0
+	*/
+	function display_cell($cell_name, $cell_data, $cell_settings)
+	{
+		return $this->display_field($cell_name, $cell_data, $cell_settings);
+	}
+
+	/**
 	* Display Field Settings
 	* 
-	* @param  array  $settings  The field's settings
-	* @return array  Settings HTML (col1, col2, rows)
+	* @param  	array  $settings  The field's settings
+	* @since 	version 2.0.0
 	*/
 	function display_field_settings($settings)
 	{
+		return array(
+			'cell2' => $this->_build_field_settings($settings)
+		);
+
+	}
+
+	/** 
+	* Display cell settings
+	*
+	* @param  	array  $settings  The field's settings
+	* @since 	version 2.0.0
+	*/
+	function display_cell_settings($settings)
+	{
+		return $this->_build_field_settings($settings, TRUE);
+	}
+
+	/** 
+	* Builds the field / cell settings form
+	*
+	* @param  	array  $settings  The field's settings
+	* @since 	version 2.0.0
+	*/
+	function _build_field_settings($settings)
+	{
 		global $LANG, $REGX;
 
+		$LANG->fetch_language_file("ff_lg_tinymce");
+
 		// open the cell
-		$cell2 = "<label for='tiny_mce_conf'>".$LANG->line("tiny_mce_conf_label")."</label> ";
 
 		// get the configs
 		$configs = $this->_get_tinymce_configs();
@@ -138,36 +175,37 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		// if configs
 		if($configs !== FALSE)
 		{
+			$out = "<div class='itemWrapper' style='float:left; margin-right:18px;'><label>".$LANG->line("tiny_mce_conf_label");
+
 			// create select
-			$cell2 .= "<select name='tiny_mce_conf' id='tiny_mce_conf'>";
+			$out .= " <select name='tiny_mce_conf' id='tiny_mce_conf'"." style='display:block; margin-top:5px'>";
 			// loop over each config
 			foreach ($configs as $key => $value)
 			{
 				$selected = ($key == $settings["tiny_mce_conf"]) ? " selected='selected'" : "";
 				// add an option with the filename as the key
-				$cell2 .= "<option value='".$key."'".$selected.">".$key."</option>";
+				$out .= "<option value='".$key."'".$selected.">".$key."</option>";
 			}
 			// close the select
-			$cell2 .= "</select>";
+			$out .= "</select>";
+			$out .= "</label></div>";
 
+			/*
 			// open the cell
-			$cell2 .= "<label for='tiny_mce_rows' style='margin-left:18px'>".$LANG->line("tiny_mce_rows_label")."</label> ";
+			$out .= "<div class='itemWrapper' style='float:left'><label>".$LANG->line("tiny_mce_rows_label")."";
 			// create rows
-			$cell2 .= "<input type='text' size='2' name='tiny_mce_rows' id='tiny_mce_rows' value='".$REGX->form_prep($settings["tiny_mce_rows"])."' />";
-
-			// return the array
-			return array('cell2' => $cell2);
+			$out .= " <input type='text' size='2' name='tiny_mce_rows' id='tiny_mce_rows' value='".$REGX->form_prep($settings["tiny_mce_rows"])."' style='width:30px; display:block; margin-top:9px' />";
+			$out .= "</label></div>";
+			*/
 		}
 		// no configs
 		else
 		{
 			// add an error message
-			$cell2 .= "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
+			$out .= "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
 		}
 
-		return array(
-			'cell2' => $cell2
-		);
+		return $out;
 
 	}
 
@@ -176,7 +214,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*
 	* @param	string $out The control panel html
 	* @return	string The modified control panel html
-	* @since 	Version 2.0.0
+	* @since 	version 2.0.0
 	*/
 	function show_full_control_panel_end($out)
 	{
@@ -184,7 +222,14 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 
 		$out = $this->get_last_call($out) . NL . NL;
 
-		if($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit')
+		if(
+			($IN->GBL('C', 'GET') == 'publish' || $IN->GBL('C', 'GET') == 'edit')
+			|| (
+				$IN->GBL('C', 'GET') == 'admin'
+				&& $IN->GBL('M', 'GET') == 'blog_admin'
+				&& $IN->GBL('P', 'GET') == 'edit_field'
+			)
+		)
 		{
 			// include the library script
 			$r =  "\n\n" . "<!-- START LG TINYMCE 2 -->";
@@ -192,14 +237,14 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 
 			if(($configs = $this->_get_tinymce_configs()) !== FALSE)
 			{
-				foreach ($this->required_configs as $filename)
+				foreach (array_unique($this->required_configs) as $filename)
 				{
 					// include it
 					if(substr($filename, -3) == ".js")
 					{
 						$r .= "\n".'<script src="'.FT_URL."ff_lg_tinymce/tinymce_config/".$filename.'" type="text/javascript" charset="utf-8"></script>';
 					}
-					else
+					elseif(isset($configs[$filename]) === TRUE)
 					{
 						$r .= $configs[$filename];
 					}
