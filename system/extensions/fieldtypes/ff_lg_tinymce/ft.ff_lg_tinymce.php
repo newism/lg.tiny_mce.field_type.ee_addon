@@ -189,20 +189,12 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 			// close the select
 			$out .= "</select>";
 			$out .= "</label></div>";
-
-			/*
-			// open the cell
-			$out .= "<div class='itemWrapper' style='float:left'><label>".$LANG->line("tiny_mce_rows_label")."";
-			// create rows
-			$out .= " <input type='text' size='2' name='tiny_mce_rows' id='tiny_mce_rows' value='".$REGX->form_prep($settings["tiny_mce_rows"])."' style='width:30px; display:block; margin-top:9px' />";
-			$out .= "</label></div>";
-			*/
 		}
 		// no configs
 		else
 		{
 			// add an error message
-			$out = "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
+			$out = "<p class='highlight'>".$LANG->line("error_no_configs")."</p><p>".FT_PATH."ff_lg_tinymce/tinymce_config/</p>";
 		}
 
 		return $out;

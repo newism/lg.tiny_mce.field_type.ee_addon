@@ -26,7 +26,7 @@ $L = array(
 	"lg_tinymce_global_scripts_label" => "TinyMCE global scripts",
 
 	"tiny_mce_conf_label" => "TinyMCE configuration:",
-	"error_no_configs" => "No configuration files found in:",
+	"error_no_configs" => "There were no TinyMMCE configuration files found in:",
 
 	"tiny_mce_rows_label" => "Rows:",
 
