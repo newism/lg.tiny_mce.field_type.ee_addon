@@ -202,7 +202,7 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 		else
 		{
 			// add an error message
-			$out .= "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
+			$out = "<span class='highlight'>".$LANG->line("error_no_configs")." ".$this->settings["tinymce_configs_path"].".</span>";
 		}
 
 		return $out;
