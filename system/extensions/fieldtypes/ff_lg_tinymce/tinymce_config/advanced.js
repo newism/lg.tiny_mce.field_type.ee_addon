@@ -6,6 +6,7 @@ tinyMCE.init({
 	mode:'textareas',
 	theme : 'advanced',
 	height : 300,
+	width : "99%",
 
 	// Cleanup/Output
 	apply_source_formatting : true,

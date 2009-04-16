@@ -5,7 +5,8 @@ tinyMCE.init({
 	editor_selector : 'lg_tinymce_basic',
 	mode:'textareas',
 	theme : 'advanced',
-	height : 2000,
+	height : 300,
+	width : "99%",
 
 	// Cleanup/Output
 	apply_source_formatting : true,

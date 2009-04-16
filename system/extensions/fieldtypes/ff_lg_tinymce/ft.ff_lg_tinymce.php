@@ -127,6 +127,8 @@ class Ff_lg_tinymce extends Fieldframe_Fieldtype {
 	*/
 	function display_cell($cell_name, $cell_data, $cell_settings)
 	{
+	  $this->insert_js('(function($){
+	$.fn.ffMatrix.onDisplayCell.ff_lg_tinymce = function(cell){};})(jQuery);');
 		return $this->display_field($cell_name, $cell_data, $cell_settings);
 	}
 
