@@ -5,7 +5,7 @@ tinyMCE.init({
 	editor_selector : 'lg_tinymce_basic',
 	mode:'textareas',
 	theme : 'advanced',
-	height : 300,
+	height : 150,
 	width : "99%",
 
 	// Cleanup/Output
@@ -26,7 +26,7 @@ tinyMCE.init({
 	// content_css : '/themes/site_themes/default/styles/editor.css?' + new Date().getTime(),
 
 	// Advanced Theme
-	theme_advanced_blockformats : 'p,h1,h2,h3,h4,h5,h6,code',
+	theme_advanced_blockformats : 'p,h2,h3,h4,h5,h6,code',
 	theme_advanced_toolbar_location : 'top',
 	theme_advanced_toolbar_align : 'left',
 	theme_advanced_statusbar_location : 'bottom',
@@ -41,7 +41,7 @@ tinyMCE.init({
 	+ 'fullscreen,nonbreaking,xhtmlxtras',
 	theme_advanced_buttons1 : 'cut,copy,pastetext,|,formatselect,|,bold,italic,'
 	+ 'strikethrough,acronym,abbr,ins,del,nonbreaking,|,bullist,numlist,outdent,'
-	+ 'indent,|,link,unlink,|,image,|,visualaid,fullscreen,|,cleanup,removeformat,code',
+	+ 'indent,|,link,unlink,|,visualaid,fullscreen,|,cleanup,removeformat,code',
 	theme_advanced_buttons2 : '',
 	theme_advanced_buttons3 : '',
 
